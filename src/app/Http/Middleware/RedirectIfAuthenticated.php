@@ -23,8 +23,16 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                $user = Auth::guard($guard)->user();
+                if (!$user->hasVerifiedEmail()) {
+                    return redirect()->route('verification.notice');
+                }
                 return redirect(RouteServiceProvider::HOME);
             }
+        }
+
+        if (!Auth::check()) {
+            session()->put('url.intended', url('/email/verify'));
         }
 
         return $next($request);
